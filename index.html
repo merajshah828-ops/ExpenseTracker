@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Expense Tracker Pro - Permanent Records</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f5f5;
+            padding-bottom: 80px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            border-top: 1px solid #eee;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: #2a5298;
+        }
+
+        .nav-icon {
+            font-size: 22px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .stat-amount {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .stat-amount.income { color: #11998e; }
+        .stat-amount.expense { color: #eb3349; }
+        .stat-amount.savings { color: #f2994a; }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            background: white;
+        }
+
+        .btn {
+            background: #2a5298;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        .btn-secondary {
+            background: #11998e;
+        }
+
+        /* Date Navigator */
+        .date-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .date-nav button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px 16px;
+        }
+
+        .date-nav h3 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        /* Transaction Item - NO DELETE BUTTON */
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-category {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .transaction-desc {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .transaction-amount {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .transaction-amount.income { color: #11998e; }
+        .transaction-amount.expense { color: #eb3349; }
+
+        /* Category Progress */
+        .category-item {
+            margin-bottom: 12px;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #2a5298;
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+        }
+
+        /* Goal Card */
+        .goal-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .goal-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .goal-amounts {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .goal-progress {
+            margin: 12px 0;
+        }
+
+        .goal-update {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .goal-update input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+        }
+
+        .goal-update button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Backup Section */
+        .backup-info {
+            background: #e8f5e9;
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        /* Page visibility */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Warning note */
+        .warning-note {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #e65100;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+            .stats-row {
+                gap: 8px;
+            }
+            .stat-box {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-item active" data-page="today">
+            <span class="nav-icon">📊</span>
+            <span>Today</span>
+        </button>
+        <button class="nav-item" data-page="daily">
+            <span class="nav-icon">📅</span>
+            <span>Daily</span>
+        </button>
+        <button class="nav-item" data-page="monthly">
+            <span class="nav-icon">📆</span>
+            <span>Monthly</span>
+        </button>
+        <button class="nav-item" data-page="goals">
+            <span class="nav-icon">🎯</span>
+            <span>Goals</span>
+        </button>
+        <button class="nav-item" data-page="backup">
+            <span class="nav-icon">💾</span>
+            <span>Backup</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <!-- TODAY PAGE -->
+        <div id="today" class="page active">
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-label">Income</div>
+                    <div class="stat-amount income" id="todayIncomeAmt">₹0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Expenses</div>
+                    <div class="stat-amount expense" id="todayExpenseAmt">₹0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Savings</div>
+                    <div class="stat-amount savings" id="todaySavingsAmt">₹0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">➕ Add Transaction</div>
+                <div class="warning-note">
+                    ⚠️ Note: Transactions cannot be deleted or edited once added. Please double-check before submitting.
+                </div>
+                <form id="transactionForm">
+                    <div class="form-group">
+                        <input type="date" id="transDate" required>
+                    </div>
+                    <div class="form-group">
+                        <select id="transType" required>
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="transCategory" required>
+                            <option value="Groceries">Groceries</option>
+                            <option value="Fuel">Fuel</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Eating Out">Eating Out</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Transport">Transport</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Salary">Salary</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="transAmount" placeholder="Amount (₹)" required step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="transDesc" placeholder="Description (optional)">
+                    </div>
+                    <button type="submit" class="btn">✅ Add Transaction (Permanent)</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- DAILY PAGE - NO DELETE BUTTONS -->
+        <div id="daily" class="page">
+            <div class="card">
+                <div class="date-nav">
+                    <button id="prevDayBtn">←</button>
+                    <h3 id="selectedDate">Apr 6, 2026</h3>
+                    <button id="nextDayBtn">→</button>
+                </div>
+                
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-label">Income</div>
+                        <div class="stat-amount income" id="dailyIncome">₹0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Expenses</div>
+                        <div class="stat-amount expense" id="dailyExpense">₹0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Savings</div>
+                        <div class="stat-amount savings" id="dailySavings">₹0</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" id="exportDayBtn" style="margin-bottom: 16px;">📥 Export Day (CSV)</button>
+
+                <div class="card-title">📋 Transactions (Permanent Record)</div>
+                <div id="dailyTransactionsList"></div>
+            </div>
+        </div>
+
+        <!-- MONTHLY PAGE -->
+        <div id="monthly" class="page">
+            <div class="card">
+                <div class="date-nav">
+                    <button id="prevMonthBtn">←</button>
+                    <h3 id="selectedMonth">April 2026</h3>
+                    <button id="nextMonthBtn">→</button>
+                </div>
+                
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-label">Income</div>
+                        <div class="stat-amount income" id="monthIncome">₹0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Expenses</div>
+                        <div class="stat-amount expense" id="monthExpense">₹0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Savings</div>
+                        <div class="stat-amount savings" id="monthSavings">₹0</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" id="exportMonthBtn" style="margin-bottom: 16px;">📥 Export Month (CSV)</button>
+
+                <div class="card-title">📊 Category Breakdown</div>
+                <div id="categoryBreakdown"></div>
+            </div>
+        </div>
+
+        <!-- GOALS PAGE -->
+        <div id="goals" class="page">
+            <div class="card">
+                <div class="card-title">🎯 Create New Goal</div>
+                <div class="form-group">
+                    <input type="text" id="goalName" placeholder="Goal name (e.g., New Laptop)">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="goalTarget" placeholder="Target amount (₹)">
+                </div>
+                <button class="btn" id="createGoalBtn">Create Goal</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📊 My Goals Progress</div>
+                <div id="goalsList"></div>
+            </div>
+        </div>
+
+        <!-- BACKUP PAGE -->
+        <div id="backup" class="page">
+            <div class="card">
+                <div class="backup-info" id="backupInfo">
+                    💾 Last backup: Never
+                </div>
+                <button class="btn" id="backupBtn">📤 Backup All Data</button>
+                <button class="btn btn-secondary" id="restoreBtn" style="margin-top: 12px;">📂 Restore from Backup</button>
+                <div class="warning-note" style="margin-top: 16px;">
+                    🔒 All transaction records are permanent. Backup regularly to keep your data safe.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let transactions = JSON.parse(localStorage.getItem('app_transactions_permanent')) || [];
+        let goals = JSON.parse(localStorage.getItem('app_goals_permanent')) || [];
+
+        // Date tracking
+        let currentDate = new Date();
+        let currentMonth = new Date();
+
+        // Helper functions
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function formatDisplayDate(date) {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatMonth(date) {
+            return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        }
+
+        function saveData() {
+            localStorage.setItem('app_transactions_permanent', JSON.stringify(transactions));
+            localStorage.setItem('app_goals_permanent', JSON.stringify(goals));
+        }
+
+        // Update Today Page
+        function updateToday() {
+            const today = formatDate(new Date());
+            let income = 0, expense = 0;
+            
+            transactions.forEach(t => {
+                if (t.date === today) {
+                    if (t.type === 'income') income += t.amount;
+                    else expense += t.amount;
+                }
+            });
+            
+            document.getElementById('todayIncomeAmt').innerHTML = `₹${income.toFixed(2)}`;
+            document.getElementById('todayExpenseAmt').innerHTML = `₹${expense.toFixed(2)}`;
+            document.getElementById('todaySavingsAmt').innerHTML = `₹${(income - expense).toFixed(2)}`;
+        }
+
+        // Update Daily Page - NO DELETE BUTTONS
+        function updateDaily() {
+            const dateStr = formatDate(currentDate);
+            document.getElementById('selectedDate').innerHTML = formatDisplayDate(currentDate);
+            
+            let income = 0, expense = 0;
+            const dayTransactions = transactions.filter(t => t.date === dateStr);
+            
+            dayTransactions.forEach(t => {
+                if (t.type === 'income') income += t.amount;
+                else expense += t.amount;
+            });
+            
+            document.getElementById('dailyIncome').innerHTML = `₹${income.toFixed(2)}`;
+            document.getElementById('dailyExpense').innerHTML = `₹${expense.toFixed(2)}`;
+            document.getElementById('dailySavings').innerHTML = `₹${(income - expense).toFixed(2)}`;
+            
+            const container = document.getElementById('dailyTransactionsList');
+            if (dayTransactions.length === 0) {
+                container.innerHTML = '<div class="empty-state">📭 No transactions for this day</div>';
+                return;
+            }
+            
+            // NO DELETE BUTTONS - just display transactions
+            container.innerHTML = dayTransactions.map(t => `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-category">${t.category}</div>
+                        <div class="transaction-desc">${t.description || '-'}</div>
+                    </div>
+                    <div class="transaction-amount ${t.type}">${t.type === 'income' ? '+' : '-'} ₹${t.amount.toFixed(2)}</div>
+                </div>
+            `).join('');
+        }
+
+        // Update Monthly Page
+        function updateMonthly() {
+            const monthStr = currentMonth.toISOString().slice(0, 7);
+            document.getElementById('selectedMonth').innerHTML = formatMonth(currentMonth);
+            
+            let income = 0, expense = 0;
+            const categories = {};
+            
+            transactions.forEach(t => {
+                if (t.date.startsWith(monthStr)) {
+                    if (t.type === 'income') income += t.amount;
+                    else expense += t.amount;
+                    
+                    if (t.type === 'expense') {
+                        categories[t.category] = (categories[t.category] || 0) + t.amount;
+                    }
+                }
+            });
+            
+            document.getElementById('monthIncome').innerHTML = `₹${income.toFixed(2)}`;
+            document.getElementById('monthExpense').innerHTML = `₹${expense.toFixed(2)}`;
+            document.getElementById('monthSavings').innerHTML = `₹${(income - expense).toFixed(2)}`;
+            
+            const container = document.getElementById('categoryBreakdown');
+            const sorted = Object.entries(categories).sort((a,b) => b[1] - a[1]);
+            
+            if (sorted.length === 0) {
+                container.innerHTML = '<div class="empty-state">📊 No expenses this month</div>';
+                return;
+            }
+            
+            container.innerHTML = sorted.map(([cat, amt]) => `
+                <div class="category-item">
+                    <div class="category-header">
+                        <span>${cat}</span>
+                        <span>₹${amt.toFixed(2)}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(amt / expense) * 100}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update Goals Page
+        function updateGoals() {
+            const container = document.getElementById('goalsList');
+            if (goals.length === 0) {
+                container.innerHTML = '<div class="empty-state">🎯 No goals yet. Create one above!</div>';
+                return;
+            }
+            
+            container.innerHTML = goals.map((goal, idx) => {
+                const percentage = (goal.current / goal.target) * 100;
+                return `
+                    <div class="goal-card">
+                        <div class="goal-header">
+                            <span class="goal-name">${goal.name}</span>
+                            <span class="goal-amounts">₹${goal.current.toFixed(2)} / ₹${goal.target.toFixed(2)}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${Math.min(percentage, 100)}%"></div>
+                        </div>
+                        <div class="goal-update">
+                            <input type="number" id="goalAmount_${idx}" placeholder="Add amount (₹)" step="0.01">
+                            <button onclick="updateGoal(${idx})">+ Add</button>
+                            <button onclick="deleteGoal(${idx})" style="background: #eb3349; color: white;">Delete Goal</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Goal functions
+        window.updateGoal = function(idx) {
+            const amount = parseFloat(document.getElementById(`goalAmount_${idx}`).value);
+            if (isNaN(amount) || amount <= 0) return alert('Enter valid amount');
+            goals[idx].current += amount;
+            saveData();
+            updateGoals();
+            alert(`✓ Added ₹${amount.toFixed(2)} to ${goals[idx].name}`);
+        }
+
+        window.deleteGoal = function(idx) {
+            if (confirm('Delete this goal? This action is permanent.')) {
+                goals.splice(idx, 1);
+                saveData();
+                updateGoals();
+            }
+        }
+
+        function createGoal() {
+            const name = document.getElementById('goalName').value.trim();
+            const target = parseFloat(document.getElementById('goalTarget').value);
+            if (!name || isNaN(target) || target <= 0) {
+                alert('Enter valid goal name and target');
+                return;
+            }
+            goals.push({ name, target, current: 0 });
+            saveData();
+            updateGoals();
+            document.getElementById('goalName').value = '';
+            document.getElementById('goalTarget').value = '';
+            alert(`✓ Goal "${name}" created!`);
+        }
+
+        // Add transaction - PERMANENT, NO DELETE
+        function addTransaction(e) {
+            e.preventDefault();
+            const date = document.getElementById('transDate').value;
+            const type = document.getElementById('transType').value;
+            const category = document.getElementById('transCategory').value;
+            const amount = parseFloat(document.getElementById('transAmount').value);
+            const description = document.getElementById('transDesc').value;
+            
+            if (!date || isNaN(amount) || amount <= 0) {
+                alert('Please fill all fields correctly');
+                return;
+            }
+            
+            // Confirm before adding permanent record
+            if (confirm(`⚠️ This transaction will be PERMANENT and cannot be deleted or edited.\n\nType: ${type}\nCategory: ${category}\nAmount: ₹${amount.toFixed(2)}\n\nAre you sure?`)) {
+                transactions.push({ 
+                    id: Date.now() + Math.random(),
+                    date, 
+                    type, 
+                    category, 
+                    amount, 
+                    description: description || '',
+                    timestamp: new Date().toISOString()
+                });
+                saveData();
+                updateToday();
+                updateDaily();
+                updateMonthly();
+                
+                document.getElementById('transactionForm').reset();
+                document.getElementById('transDate').value = formatDate(new Date());
+                alert('✓ Transaction added permanently!');
+            }
+        }
+
+        // Export functions
+        function exportDay() {
+            const dateStr = formatDate(currentDate);
+            const dayTransactions = transactions.filter(t => t.date === dateStr);
+            if (dayTransactions.length === 0) return alert('No transactions for this day');
+            
+            let csv = 'Date,Type,Category,Description,Amount\n';
+            dayTransactions.forEach(t => {
+                csv += `${t.date},${t.type},${t.category},${t.description || '-'},${t.amount}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `transactions_${dateStr}.csv`;
+            link.click();
+            alert('✓ CSV downloaded to your phone!');
+        }
+
+        function exportMonth() {
+            const monthStr = currentMonth.toISOString().slice(0, 7);
+            const monthTransactions = transactions.filter(t => t.date.startsWith(monthStr));
+            if (monthTransactions.length === 0) return alert('No transactions this month');
+            
+            let csv = 'Date,Type,Category,Description,Amount\n';
+            monthTransactions.forEach(t => {
+                csv += `${t.date},${t.type},${t.category},${t.description || '-'},${t.amount}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `transactions_${monthStr}.csv`;
+            link.click();
+            alert('✓ CSV downloaded to your phone!');
+        }
+
+        // Backup functions
+        function backupData() {
+            const data = { transactions, goals, backupDate: new Date().toISOString() };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `expense_tracker_backup_${formatDate(new Date())}.json`;
+            link.click();
+            localStorage.setItem('lastBackup', new Date().toLocaleString());
+            document.getElementById('backupInfo').innerHTML = `💾 Last backup: ${new Date().toLocaleString()}`;
+            alert('✓ Backup saved to your phone!');
+        }
+
+        function restoreData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        transactions = data.transactions || [];
+                        goals = data.goals || [];
+                        saveData();
+                        updateToday();
+                        updateDaily();
+                        updateMonthly();
+                        updateGoals();
+                        alert('✓ Data restored successfully!');
+                    } catch(err) {
+                        alert('Invalid backup file');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // Navigation
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const pageId = item.dataset.page;
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    document.getElementById(pageId).classList.add('active');
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    if (pageId === 'daily') updateDaily();
+                    if (pageId === 'monthly') updateMonthly();
+                    if (pageId === 'goals') updateGoals();
+                });
+            });
+        }
+
+        // Date navigation
+        document.getElementById('prevDayBtn')?.addEventListener('click', () => {
+            currentDate.setDate(currentDate.getDate() - 1);
+            updateDaily();
+        });
+        
+        document.getElementById('nextDayBtn')?.addEventListener('click', () => {
+            currentDate.setDate(currentDate.getDate() + 1);
+            updateDaily();
+        });
+        
+        document.getElementById('prevMonthBtn')?.addEventListener('click', () => {
+            currentMonth.setMonth(currentMonth.getMonth() - 1);
+            updateMonthly();
+        });
+        
+        document.getElementById('nextMonthBtn')?.addEventListener('click', () => {
+            currentMonth.setMonth(currentMonth.getMonth() + 1);
+            updateMonthly();
+        });
+
+        // Set today's date
+        document.getElementById('transDate').value = formatDate(new Date());
+        
+        // Event listeners
+        document.getElementById('transactionForm').addEventListener('submit', addTransaction);
+        document.getElementById('createGoalBtn').addEventListener('click', createGoal);
+        document.getElementById('exportDayBtn').addEventListener('click', exportDay);
+        document.getElementById('exportMonthBtn').addEventListener('click', exportMonth);
+        document.getElementById('backupBtn').addEventListener('click', backupData);
+        document.getElementById('restoreBtn').addEventListener('click', restoreData);
+        
+        // Load last backup date
+        const lastBackup = localStorage.getItem('lastBackup');
+        if (lastBackup) document.getElementById('backupInfo').innerHTML = `💾 Last backup: ${lastBackup}`;
+        
+        // Initialize
+        setupNavigation();
+        updateToday();
+        updateDaily();
+        updateMonthly();
+        updateGoals();
+    </script>
+</body>
+</html>
